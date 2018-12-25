@@ -2,9 +2,10 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>JS Bin</title>
+  <title>musicplayer</title>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
   <link rel="stylesheet" href="css.css">
+
 </head>
 <body>
   <div class="cover"></div>
@@ -12,9 +13,9 @@
     <div class="music-panel">
       <div class="music">
         <div class="control">
-          <span class="back fas fa-step-backward"></span>
-          <span class="back fas fa-play"></span>
-          <span class="back fas fa-step-forward"></span>
+          <span class="back"><i class="fas fa-step-backward"></i></span>
+          <span class='play'><i class="fas fa-pause"></i></span>
+          <span class="forward"><i class="fas fa-step-forward"></i></span>
         </div>
         <div class="info">
           <div class="title">My song</div>
@@ -30,29 +31,98 @@
     </div>
   </div>
   <ul class="list">
-    <li>贰佰-玫瑰<i class="fas fa-music"></i></li>
-    <li>Bigbang-IF YOU</li>
+    <!-- <li>贰佰-玫瑰<i class="fas fa-music"></i></li>
+    <li>Bigbang-IF YOU</li>  -->
   </ul>
 
 
 <script>
+   var musicList = []
+   var currentIndex = 0
+   var audio = new Audio()
+   audio.autoplay = true
    
    getMusicList(function(list){
-       console.log(list)
-       var song=list[1]
-       var audioObject = new Audio(song.src)
-       console.log(audioObject)
+     musicList = list
+     console.log(musicList)
+     loadMusic(list[currentIndex])
+     generateList(list)
+    })
+      //  console.log(list)
+      //  var song=list[1]
+      //  var audioObject = new Audio(song.src)
+      //  console.log(audioObject)
 
       //  audioObject.autoplay=true
-        audioObject.onload = function(){
-        audioObject.play()
-       }
+        // audioObject.onload = function(){
+        // audioObject.play()})
+     
+     audio.ontimeupdate = function(){
+       // console.log(this.currentTime)
+      clock = setInterval(function(){
+        $('.musicbox .progress-now').style.width = (audio.currentTime/audio.duration)*100+'%'
+       var second = (Math.floor(audio.currentTime%60)+'').length == 2? Math.floor(audio.currentTime%60):('0'+Math.floor(audio.currentTime%60))
+       var time = Math.floor(audio.currentTime/60) + ':' + second
+       $('.musicbox .time').innerText = time
+      },1000)
+     }
+    audio.onpause = function(){
+      clearInterval(clock)
+    }
+
+    audio.onended = function(){
+       currentIndex = (++currentIndex)%musicList.length
+       loadMusic(musicList[currentIndex])
+    }
+    
+    $('.musicbox .play').onclick = function(){
+      if(audio.paused){
+        audio.play()
+        this.querySelector('.fas').classList.remove('fa-play')
+        this.querySelector('.fas').classList.add('fa-pause')
+      }else{
+        audio.pause()
+      // console.log(this)
+      this.querySelector('.fas').classList.remove('fa-pause')
+      this.querySelector('.fas').classList.add('fa-play')
+    }}
+
+    $('.musicbox .forward').onclick = function(){
+      currentIndex = (++currentIndex)%musicList.length
+      console.log(currentIndex)
+      loadMusic(musicList[currentIndex])
+    }
+    $('.musicbox .back').onclick = function(){
+      currentIndex = (currentIndex+musicList.length-1)%musicList.length
+      console.log(currentIndex)
+      loadMusic(musicList[currentIndex])
+    }
+
+    $('.musicbox .bar').onclick = function(e){
+         console.log(e)
+         var percent = e.offsetX/parseInt(getComputedStyle(this).width)
+         console.log(percent)
+         audio.currentTime = audio.duration*percent
+    }
+
+    $('.list').onclick = function(e){
+      e.stopPropagation()
+      var listItems = $('.list').getElementsByTagName('li')
+      var listIndex = [].indexOf.call(listItems,e.target)
+      loadMusic(musicList[listIndex])
+     
+    }
+
+
+     function $(ele){
+       return document.querySelector(ele)
+     }
        
        
-   })
+  
     function getMusicList(callback){
     var xhr = new XMLHttpRequest()
-    xhr.open('GET','music/music.json',true)
+    xhr.open('GET','music.json',true)
     xhr.onload = function(){
         if((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304){
             // console.log(JSON.parse(xhr.responseText))
@@ -66,6 +136,22 @@
     }
     xhr.send()
     }  
+
+    function loadMusic(musicObj){
+      console.log('begin play ',musicObj)
+      $('.musicbox .title').innerText = musicObj.title
+      $('.musicbox .auther').innerText = musicObj.auther
+      $('.cover').style.backgroundImage = 'url(' + musicObj.img + ')'
+      audio.src = musicObj.src
+    }
+
+    function generateList(e){
+      e.forEach(function(element){
+        var li = document.createElement('li')
+        li.innerText = element.title + "-" + element.auther
+        $('.list').appendChild(li)
+      })
+    }
 </script>
 </body>
 </html>
