@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JS Bin</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <div class="cover"></div>
+  <div class="musicbox">
+    <div class="music-panel">
+      <div class="music">
+        <div class="control">
+          <span class="back fas fa-step-backward"></span>
+          <span class="back fas fa-play"></span>
+          <span class="back fas fa-step-forward"></span>
+        </div>
+        <div class="info">
+          <div class="title">My song</div>
+          <div class="auther">ruoyu</div>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="bar">
+          <div class="progress-total"></div>
+          <div class="progress-now"></div>
+        </div>   
+      <div class="time">0:00</div>
+    </div>
+  </div>
+  <ul class="list">
+    <li>贰佰-玫瑰<i class="fas fa-music"></i></li>
+    <li>Bigbang-IF YOU</li>
+  </ul>
+
+
+<script>
+   
+   getMusicList(function(list){
+       console.log(list)
+       var song=list[1]
+       var audioObject = new Audio(song.src)
+       console.log(audioObject)
+
+      //  audioObject.autoplay=true
+        audioObject.onload = function(){
+        audioObject.play()
+       }
+       
+       
+   })
+    function getMusicList(callback){
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET','music/music.json',true)
+    xhr.onload = function(){
+        if((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304){
+            // console.log(JSON.parse(xhr.responseText))
+            callback(JSON.parse(xhr.responseText))
+        }else{
+            console.log('获取数据失败')
+        }
+    }
+    xhr.onerror = function(){
+        console.log('网络异常')
+    }
+    xhr.send()
+    }  
+</script>
+</body>
+</html>
